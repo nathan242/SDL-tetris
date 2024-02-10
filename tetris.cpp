@@ -1,0 +1,227 @@
+#include "graphics.h"
+#include <SDL/SDL.h>
+
+#define RES_X 800
+#define RES_Y 600
+#define BPP 32
+
+#define GRID_SIZE_X 10
+#define GRID_SIZE_Y 20
+
+#define MOVE_DOWN 0
+#define MOVE_LEFT 1
+#define MOVE_RIGHT 2
+
+
+SDL_Event input;
+
+void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[10][20], int piece)
+{
+    switch (piece) {
+        case 0:
+            tetrominoe[0][0] = 4;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 4;
+            tetrominoe[1][1] = 1;
+            tetrominoe[2][0] = 5;
+            tetrominoe[2][1] = 0;
+            tetrominoe[3][0] = 6;
+            tetrominoe[3][1] = 0;
+            break;
+    }
+
+    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
+    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
+    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
+    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+}
+
+void copy_tetrominoe(int src_tetrominoe[4][2], int dst_tetrominoe[4][2])
+{
+    dst_tetrominoe[0][0] = src_tetrominoe[0][0];
+    dst_tetrominoe[0][1] = src_tetrominoe[0][1];
+    dst_tetrominoe[1][0] = src_tetrominoe[1][0];
+    dst_tetrominoe[1][1] = src_tetrominoe[1][1];
+    dst_tetrominoe[2][0] = src_tetrominoe[2][0];
+    dst_tetrominoe[2][1] = src_tetrominoe[2][1];
+    dst_tetrominoe[3][0] = src_tetrominoe[3][0];
+    dst_tetrominoe[3][1] = src_tetrominoe[3][1];
+}
+
+bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int direction)
+{
+    bool moved = false;
+    int new_tetrominoe[4][2];
+
+    copy_tetrominoe(tetrominoe, new_tetrominoe);
+
+    switch (direction) {
+        case MOVE_DOWN:
+            new_tetrominoe[0][1]++;
+            new_tetrominoe[1][1]++;
+            new_tetrominoe[2][1]++;
+            new_tetrominoe[3][1]++;
+            break;
+        case MOVE_LEFT:
+            new_tetrominoe[0][0]--;
+            new_tetrominoe[1][0]--;
+            new_tetrominoe[2][0]--;
+            new_tetrominoe[3][0]--;
+            break;
+        case MOVE_RIGHT:
+            new_tetrominoe[0][0]++;
+            new_tetrominoe[1][0]++;
+            new_tetrominoe[2][0]++;
+            new_tetrominoe[3][0]++;
+            break;
+    }
+
+    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = false;
+    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = false;
+    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
+    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
+
+    if (
+        new_tetrominoe[0][0] >= 0 && new_tetrominoe[0][0] < GRID_SIZE_X
+        && new_tetrominoe[0][1] >= 0 && new_tetrominoe[0][1] < GRID_SIZE_Y
+        && new_tetrominoe[1][0] >= 0 && new_tetrominoe[1][0] < GRID_SIZE_X
+        && new_tetrominoe[1][1] >= 0 && new_tetrominoe[1][1] < GRID_SIZE_Y
+        && new_tetrominoe[2][0] >= 0 && new_tetrominoe[2][0] < GRID_SIZE_X
+        && new_tetrominoe[2][1] >= 0 && new_tetrominoe[2][1] < GRID_SIZE_Y
+        && new_tetrominoe[3][0] >= 0 && new_tetrominoe[3][0] < GRID_SIZE_X
+        && new_tetrominoe[3][1] >= 0 && new_tetrominoe[3][1] < GRID_SIZE_Y
+        && !*grid[new_tetrominoe[0][0]][new_tetrominoe[0][1]]->active
+        && !*grid[new_tetrominoe[1][0]][new_tetrominoe[1][1]]->active
+        && !*grid[new_tetrominoe[2][0]][new_tetrominoe[2][1]]->active
+        && !*grid[new_tetrominoe[3][0]][new_tetrominoe[3][1]]->active
+    ) {
+        copy_tetrominoe(new_tetrominoe, tetrominoe);
+        moved = true;
+    }
+
+    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
+    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
+    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
+    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+
+    return moved;
+}
+
+void tetris()
+{
+    // bool vars for control directions and quit event
+    bool quit = false;
+    bool left = false;
+    bool right = false;
+    bool up = false;
+    bool down = false;
+    bool key_pressed = false;
+
+    graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
+    int tetrominoe[4][2];
+
+    int loop_count = 0;
+
+    graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
+
+    for (int x = 0; x < GRID_SIZE_X; x++) {
+        for (int y = 0; y < GRID_SIZE_Y; y++) {
+            grid[x][y] = new graphics_obj;
+            grid[x][y]->sprite = SDL_CreateRGBSurface(0, 10, 10, 32, 0, 0, 0, 0);
+            grid[x][y]->draw_pos_x = x*10;
+            grid[x][y]->draw_pos_y = y*10;
+            grid[x][y]->draw_active = false;
+            grid[x][y]->pos_x = &grid[x][y]->draw_pos_x;
+            grid[x][y]->pos_y = &grid[x][y]->draw_pos_y;
+            grid[x][y]->active = &grid[x][y]->draw_active;
+            SDL_FillRect(grid[x][y]->sprite, NULL, SDL_MapRGB(window->screen->format, 255, 255, 255));
+
+            window->add_object(grid[x][y]);
+        }
+    }
+
+    create_tetrominoe(tetrominoe, grid, 0);
+
+    // Main loop
+    while (quit==false)
+    {
+        // Read inputs
+        while (SDL_PollEvent(&input))
+        {
+            switch (input.type)
+            {
+                case SDL_KEYDOWN:
+                    switch (input.key.keysym.sym)
+                        {
+                            case SDLK_LEFT:
+                                left = true;
+                                break;
+                            case SDLK_RIGHT:
+                                right = true;
+                                break;
+                            case SDLK_UP:
+                                up = true;
+                                break;
+                            case SDLK_DOWN:
+                                down = true;
+                                break;
+                            case SDLK_q:
+                                quit = true;
+                                break;
+                        }
+                        break;
+                case SDL_KEYUP:
+                    switch (input.key.keysym.sym)
+                        {
+                            case SDLK_LEFT:
+                                left = false;
+                                break;
+                            case SDLK_RIGHT:
+                                right = false;
+                                break;
+                            case SDLK_UP:
+                                up = false;
+                                break;
+                            case SDLK_DOWN:
+                                down = false;
+                                break;
+                        }
+            }
+        }
+
+        if (!left && !right && !up && !down) {
+            key_pressed = false;
+        }
+
+        if (!key_pressed && (left || right || up || down)) {
+            if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
+            if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
+
+            key_pressed = true;
+        }
+
+        if (++loop_count == 100) {
+            if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
+                create_tetrominoe(tetrominoe, grid, 0);
+            }
+
+            loop_count = 0;
+        }
+
+        // Redraw screen
+        window->draw(2);
+    }
+
+    SDL_Quit();
+
+    delete window;
+
+    return;
+}
+
+int main (int argc, char *argv[])
+{
+    tetris();
+    return 0;
+}
+
