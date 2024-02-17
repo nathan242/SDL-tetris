@@ -182,6 +182,50 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
     return moved;
 }
 
+void get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
+{
+    int remove_count = 0;
+
+    for (int y = 0; y < GRID_SIZE_Y; y++) {
+        for (int x = 0; x < GRID_SIZE_X; x++) {
+            if (!*grid[x][y]->active) {
+                goto next_line;
+            }
+        }
+
+        // Remove the line
+        //for (int x = 0; x < GRID_SIZE_X; x++) {
+        //    *grid[x][y]->active = false;
+        //}
+
+        remove_lines[remove_count++] = y;
+
+        next_line:
+        continue;
+    }
+}
+
+void do_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
+{
+    for (int i = 0; i < 4; i++) {
+        if (remove_lines[i] == -1) { continue; }
+
+        // Remove the line
+        for (int x = 0; x < GRID_SIZE_X; x++) {
+            *grid[x][remove_lines[i]]->active = false;
+        }
+
+        // Move above lines down
+        for (int y = remove_lines[i]; y != 0; y--) {
+            for (int x = 0; x < GRID_SIZE_X; x++) {
+                *grid[x][y]->active = *grid[x][y-1]->active;
+            }
+        }
+
+        remove_lines[i] = -1;
+    }
+}
+
 void tetris()
 {
     // bool vars for control directions and quit event
@@ -194,6 +238,7 @@ void tetris()
 
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     int tetrominoe[4][2];
+    int remove_lines[4] = {-1, -1, -1, -1};
 
     int loop_count = 0;
 
@@ -280,6 +325,8 @@ void tetris()
 
         if (++loop_count == 100) {
             if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
+                get_remove_lines(grid, remove_lines);
+                do_remove_lines(grid, remove_lines);
                 create_tetrominoe(tetrominoe, grid, rand() % 7);
             }
 
