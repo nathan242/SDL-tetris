@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include <SDL/SDL.h>
+#include <time.h>
 
 #define RES_X 800
 #define RES_Y 600
@@ -7,6 +8,14 @@
 
 #define GRID_SIZE_X 10
 #define GRID_SIZE_Y 20
+
+#define PIECE_LINE 0
+#define PIECE_L 1
+#define PIECE_REVERSE_L 2
+#define PIECE_SQUARE 3
+#define PIECE_5 4
+#define PIECE_S 5
+#define PIECE_T 6
 
 #define MOVE_DOWN 0
 #define MOVE_LEFT 1
@@ -18,7 +27,29 @@ SDL_Event input;
 void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[10][20], int piece)
 {
     switch (piece) {
-        case 0:
+        case PIECE_LINE:
+            tetrominoe[0][0] = 4;
+            tetrominoe[0][1] = 1;
+            tetrominoe[1][0] = 5;
+            tetrominoe[1][1] = 1;
+            tetrominoe[2][0] = 6;
+            tetrominoe[2][1] = 1;
+            tetrominoe[3][0] = 7;
+            tetrominoe[3][1] = 1;
+            break;
+
+        case PIECE_L:
+            tetrominoe[0][0] = 4;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 6;
+            tetrominoe[1][1] = 1;
+            tetrominoe[2][0] = 5;
+            tetrominoe[2][1] = 0;
+            tetrominoe[3][0] = 6;
+            tetrominoe[3][1] = 0;
+            break;
+
+        case PIECE_REVERSE_L:
             tetrominoe[0][0] = 4;
             tetrominoe[0][1] = 0;
             tetrominoe[1][0] = 4;
@@ -27,6 +58,50 @@ void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[10][20], int pie
             tetrominoe[2][1] = 0;
             tetrominoe[3][0] = 6;
             tetrominoe[3][1] = 0;
+            break;
+
+        case PIECE_SQUARE:
+            tetrominoe[0][0] = 5;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 6;
+            tetrominoe[1][1] = 0;
+            tetrominoe[2][0] = 5;
+            tetrominoe[2][1] = 1;
+            tetrominoe[3][0] = 6;
+            tetrominoe[3][1] = 1;
+            break;
+
+        case PIECE_5:
+            tetrominoe[0][0] = 5;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 6;
+            tetrominoe[1][1] = 0;
+            tetrominoe[2][0] = 4;
+            tetrominoe[2][1] = 1;
+            tetrominoe[3][0] = 5;
+            tetrominoe[3][1] = 1;
+            break;
+
+        case PIECE_S:
+            tetrominoe[0][0] = 4;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 5;
+            tetrominoe[1][1] = 0;
+            tetrominoe[2][0] = 5;
+            tetrominoe[2][1] = 1;
+            tetrominoe[3][0] = 6;
+            tetrominoe[3][1] = 1;
+            break;
+
+        case PIECE_T:
+            tetrominoe[0][0] = 4;
+            tetrominoe[0][1] = 0;
+            tetrominoe[1][0] = 5;
+            tetrominoe[1][1] = 0;
+            tetrominoe[2][0] = 6;
+            tetrominoe[2][1] = 0;
+            tetrominoe[3][0] = 5;
+            tetrominoe[3][1] = 1;
             break;
     }
 
@@ -122,6 +197,8 @@ void tetris()
 
     int loop_count = 0;
 
+    srand(time(NULL));
+
     graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
@@ -140,7 +217,7 @@ void tetris()
         }
     }
 
-    create_tetrominoe(tetrominoe, grid, 0);
+    create_tetrominoe(tetrominoe, grid, rand() % 7);
 
     // Main loop
     while (quit==false)
@@ -196,13 +273,14 @@ void tetris()
         if (!key_pressed && (left || right || up || down)) {
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
+            if (down) { move_tetrominoe(tetrominoe, grid, MOVE_DOWN); }
 
             key_pressed = true;
         }
 
         if (++loop_count == 100) {
             if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
-                create_tetrominoe(tetrominoe, grid, 0);
+                create_tetrominoe(tetrominoe, grid, rand() % 7);
             }
 
             loop_count = 0;
