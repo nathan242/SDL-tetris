@@ -24,7 +24,7 @@
 
 SDL_Event input;
 
-void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[10][20], int piece)
+void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
 {
     switch (piece) {
         case PIECE_LINE:
@@ -182,6 +182,45 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
     return moved;
 }
 
+// TODO
+void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int type)
+{
+    int new_tetrominoe[4][2];
+    int center_x;
+    int center_y;
+    int top_left_x;
+    int top_left_y;
+
+    copy_tetrominoe(tetrominoe, new_tetrominoe);
+
+    switch (type) {
+        case 0:
+        default:
+            center_x = new_tetrominoe[1][0];
+            center_y = new_tetrominoe[1][1];
+            new_tetrominoe[0][0] = tetrominoe[0][1] + center_x - center_y;
+            new_tetrominoe[0][1] = center_x + center_y - tetrominoe[0][0] - 4;
+            new_tetrominoe[1][0] = tetrominoe[1][1] + center_x - center_y;
+            new_tetrominoe[1][1] = center_x + center_y - tetrominoe[1][0] - 4;
+            new_tetrominoe[2][0] = tetrominoe[2][1] + center_x - center_y;
+            new_tetrominoe[2][1] = center_x + center_y - tetrominoe[2][0] - 4;
+            new_tetrominoe[3][0] = tetrominoe[3][1] + center_x - center_y;
+            new_tetrominoe[3][1] = center_x + center_y - tetrominoe[3][0] - 4;
+    }
+
+    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = false;
+    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = false;
+    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
+    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
+
+    copy_tetrominoe(new_tetrominoe, tetrominoe);
+
+    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
+    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
+    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
+    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+}
+
 void get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
 {
     int remove_count = 0;
@@ -192,11 +231,6 @@ void get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_l
                 goto next_line;
             }
         }
-
-        // Remove the line
-        //for (int x = 0; x < GRID_SIZE_X; x++) {
-        //    *grid[x][y]->active = false;
-        //}
 
         remove_lines[remove_count++] = y;
 
@@ -238,6 +272,8 @@ void tetris()
 
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     int tetrominoe[4][2];
+    int current;
+    int next = -1;
     int remove_lines[4] = {-1, -1, -1, -1};
 
     int loop_count = 0;
@@ -262,7 +298,9 @@ void tetris()
         }
     }
 
-    create_tetrominoe(tetrominoe, grid, rand() % 7);
+    current = rand() % 7;
+
+    create_tetrominoe(tetrominoe, grid, current);
 
     // Main loop
     while (quit==false)
@@ -311,6 +349,10 @@ void tetris()
             }
         }
 
+        if (next == -1) {
+            next = rand() % 7;
+        }
+
         if (!left && !right && !up && !down) {
             key_pressed = false;
         }
@@ -319,6 +361,7 @@ void tetris()
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { move_tetrominoe(tetrominoe, grid, MOVE_DOWN); }
+            //if (up) { rotate_tetrominoe(tetrominoe, grid, 0); }
 
             key_pressed = true;
         }
@@ -327,7 +370,9 @@ void tetris()
             if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
                 get_remove_lines(grid, remove_lines);
                 do_remove_lines(grid, remove_lines);
-                create_tetrominoe(tetrominoe, grid, rand() % 7);
+                create_tetrominoe(tetrominoe, grid, next);
+                current = next;
+                next = -1;
             }
 
             loop_count = 0;
