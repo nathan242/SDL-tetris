@@ -123,6 +123,22 @@ void copy_tetrominoe(int src_tetrominoe[4][2], int dst_tetrominoe[4][2])
     dst_tetrominoe[3][1] = src_tetrominoe[3][1];
 }
 
+bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
+{
+    return tetrominoe[0][0] >= 0 && tetrominoe[0][0] < GRID_SIZE_X
+        && tetrominoe[0][1] >= 0 && tetrominoe[0][1] < GRID_SIZE_Y
+        && tetrominoe[1][0] >= 0 && tetrominoe[1][0] < GRID_SIZE_X
+        && tetrominoe[1][1] >= 0 && tetrominoe[1][1] < GRID_SIZE_Y
+        && tetrominoe[2][0] >= 0 && tetrominoe[2][0] < GRID_SIZE_X
+        && tetrominoe[2][1] >= 0 && tetrominoe[2][1] < GRID_SIZE_Y
+        && tetrominoe[3][0] >= 0 && tetrominoe[3][0] < GRID_SIZE_X
+        && tetrominoe[3][1] >= 0 && tetrominoe[3][1] < GRID_SIZE_Y
+        && !*grid[tetrominoe[0][0]][tetrominoe[0][1]]->active
+        && !*grid[tetrominoe[1][0]][tetrominoe[1][1]]->active
+        && !*grid[tetrominoe[2][0]][tetrominoe[2][1]]->active
+        && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
+}
+
 bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int direction)
 {
     bool moved = false;
@@ -156,20 +172,7 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
     *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
 
-    if (
-        new_tetrominoe[0][0] >= 0 && new_tetrominoe[0][0] < GRID_SIZE_X
-        && new_tetrominoe[0][1] >= 0 && new_tetrominoe[0][1] < GRID_SIZE_Y
-        && new_tetrominoe[1][0] >= 0 && new_tetrominoe[1][0] < GRID_SIZE_X
-        && new_tetrominoe[1][1] >= 0 && new_tetrominoe[1][1] < GRID_SIZE_Y
-        && new_tetrominoe[2][0] >= 0 && new_tetrominoe[2][0] < GRID_SIZE_X
-        && new_tetrominoe[2][1] >= 0 && new_tetrominoe[2][1] < GRID_SIZE_Y
-        && new_tetrominoe[3][0] >= 0 && new_tetrominoe[3][0] < GRID_SIZE_X
-        && new_tetrominoe[3][1] >= 0 && new_tetrominoe[3][1] < GRID_SIZE_Y
-        && !*grid[new_tetrominoe[0][0]][new_tetrominoe[0][1]]->active
-        && !*grid[new_tetrominoe[1][0]][new_tetrominoe[1][1]]->active
-        && !*grid[new_tetrominoe[2][0]][new_tetrominoe[2][1]]->active
-        && !*grid[new_tetrominoe[3][0]][new_tetrominoe[3][1]]->active
-    ) {
+    if (check_tetrominoe_collision(new_tetrominoe, grid)) {
         copy_tetrominoe(new_tetrominoe, tetrominoe);
         moved = true;
     }
@@ -185,35 +188,60 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
 // TODO
 void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int type)
 {
+    int temp_tetrominoe[4][2];
     int new_tetrominoe[4][2];
-    int center_x;
-    int center_y;
-    int top_left_x;
-    int top_left_y;
+    int lowest_x;
+    int lowest_y;
 
-    copy_tetrominoe(tetrominoe, new_tetrominoe);
+    lowest_x = tetrominoe[0][0];
+    if (lowest_x > tetrominoe[1][0]) lowest_x = tetrominoe[1][0];
+    if (lowest_x > tetrominoe[2][0]) lowest_x = tetrominoe[2][0];
+    if (lowest_x > tetrominoe[3][0]) lowest_x = tetrominoe[3][0];
+
+    lowest_y = tetrominoe[0][1];
+    if (lowest_y > tetrominoe[1][1]) lowest_y = tetrominoe[1][1];
+    if (lowest_y > tetrominoe[2][1]) lowest_y = tetrominoe[2][1];
+    if (lowest_y > tetrominoe[3][1]) lowest_y = tetrominoe[3][1];
+
+    temp_tetrominoe[0][0] = tetrominoe[0][0] - lowest_x;
+    temp_tetrominoe[1][0] = tetrominoe[1][0] - lowest_x;
+    temp_tetrominoe[2][0] = tetrominoe[2][0] - lowest_x;
+    temp_tetrominoe[3][0] = tetrominoe[3][0] - lowest_x;
+    temp_tetrominoe[0][1] = tetrominoe[0][1] - lowest_y;
+    temp_tetrominoe[1][1] = tetrominoe[1][1] - lowest_y;
+    temp_tetrominoe[2][1] = tetrominoe[2][1] - lowest_y;
+    temp_tetrominoe[3][1] = tetrominoe[3][1] - lowest_y;
 
     switch (type) {
         case 0:
         default:
-            center_x = new_tetrominoe[1][0];
-            center_y = new_tetrominoe[1][1];
-            new_tetrominoe[0][0] = tetrominoe[0][1] + center_x - center_y;
-            new_tetrominoe[0][1] = center_x + center_y - tetrominoe[0][0] - 4;
-            new_tetrominoe[1][0] = tetrominoe[1][1] + center_x - center_y;
-            new_tetrominoe[1][1] = center_x + center_y - tetrominoe[1][0] - 4;
-            new_tetrominoe[2][0] = tetrominoe[2][1] + center_x - center_y;
-            new_tetrominoe[2][1] = center_x + center_y - tetrominoe[2][0] - 4;
-            new_tetrominoe[3][0] = tetrominoe[3][1] + center_x - center_y;
-            new_tetrominoe[3][1] = center_x + center_y - tetrominoe[3][0] - 4;
+            new_tetrominoe[0][0] = temp_tetrominoe[0][1];
+            new_tetrominoe[0][1] = 1-(temp_tetrominoe[0][0]-(4-2));
+            new_tetrominoe[1][0] = temp_tetrominoe[1][1];
+            new_tetrominoe[1][1] = 1-(temp_tetrominoe[1][0]-(4-2));
+            new_tetrominoe[2][0] = temp_tetrominoe[2][1];
+            new_tetrominoe[2][1] = 1-(temp_tetrominoe[2][0]-(4-2));
+            new_tetrominoe[3][0] = temp_tetrominoe[3][1];
+            new_tetrominoe[3][1] = 1-(temp_tetrominoe[3][0]-(4-2));
     }
+
+    new_tetrominoe[0][0] = new_tetrominoe[0][0] + lowest_x;
+    new_tetrominoe[1][0] = new_tetrominoe[1][0] + lowest_x;
+    new_tetrominoe[2][0] = new_tetrominoe[2][0] + lowest_x;
+    new_tetrominoe[3][0] = new_tetrominoe[3][0] + lowest_x;
+    new_tetrominoe[0][1] = new_tetrominoe[0][1] + lowest_y;
+    new_tetrominoe[1][1] = new_tetrominoe[1][1] + lowest_y;
+    new_tetrominoe[2][1] = new_tetrominoe[2][1] + lowest_y;
+    new_tetrominoe[3][1] = new_tetrominoe[3][1] + lowest_y;
 
     *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = false;
     *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = false;
     *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
 
-    copy_tetrominoe(new_tetrominoe, tetrominoe);
+    if (check_tetrominoe_collision(new_tetrominoe, grid)) {
+        copy_tetrominoe(new_tetrominoe, tetrominoe);
+    }
 
     *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
     *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
@@ -361,7 +389,7 @@ void tetris()
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { move_tetrominoe(tetrominoe, grid, MOVE_DOWN); }
-            //if (up) { rotate_tetrominoe(tetrominoe, grid, 0); }
+            if (up) { rotate_tetrominoe(tetrominoe, grid, 0); }
 
             key_pressed = true;
         }
