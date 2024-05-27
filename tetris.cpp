@@ -3,11 +3,12 @@
 #include <time.h>
 
 #define RES_X 800
-#define RES_Y 600
+#define RES_Y 800
 #define BPP 32
 
 #define GRID_SIZE_X 10
 #define GRID_SIZE_Y 20
+#define BLOCK_SIZE 40
 
 #define PIECE_LINE 0
 #define PIECE_L 1
@@ -313,14 +314,14 @@ void tetris()
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
             grid[x][y] = new graphics_obj;
-            grid[x][y]->sprite = SDL_CreateRGBSurface(0, 10, 10, 32, 0, 0, 0, 0);
-            grid[x][y]->draw_pos_x = x*10;
-            grid[x][y]->draw_pos_y = y*10;
+            grid[x][y]->sprite = SDL_CreateRGBSurface(0, BLOCK_SIZE, BLOCK_SIZE, 32, 0, 0, 0, 0);
+            grid[x][y]->draw_pos_x = x*BLOCK_SIZE;
+            grid[x][y]->draw_pos_y = y*BLOCK_SIZE;
             grid[x][y]->draw_active = false;
             grid[x][y]->pos_x = &grid[x][y]->draw_pos_x;
             grid[x][y]->pos_y = &grid[x][y]->draw_pos_y;
-            grid[x][y]->size_x = 10;
-            grid[x][y]->size_y = 10;
+            grid[x][y]->size_x = BLOCK_SIZE;
+            grid[x][y]->size_y = BLOCK_SIZE;
             grid[x][y]->active = &grid[x][y]->draw_active;
             SDL_FillRect(grid[x][y]->sprite, NULL, SDL_MapRGB(grid[x][y]->sprite->format, 255, 255, 255));
             grid[x][y]->texture = SDL_CreateTextureFromSurface(window->renderer, grid[x][y]->sprite);
