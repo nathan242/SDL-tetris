@@ -1,5 +1,5 @@
 #include "graphics.h"
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 #include <time.h>
 
 #define RES_X 800
@@ -319,8 +319,11 @@ void tetris()
             grid[x][y]->draw_active = false;
             grid[x][y]->pos_x = &grid[x][y]->draw_pos_x;
             grid[x][y]->pos_y = &grid[x][y]->draw_pos_y;
+            grid[x][y]->size_x = 10;
+            grid[x][y]->size_y = 10;
             grid[x][y]->active = &grid[x][y]->draw_active;
-            SDL_FillRect(grid[x][y]->sprite, NULL, SDL_MapRGB(window->screen->format, 255, 255, 255));
+            SDL_FillRect(grid[x][y]->sprite, NULL, SDL_MapRGB(grid[x][y]->sprite->format, 255, 255, 255));
+            grid[x][y]->texture = SDL_CreateTextureFromSurface(window->renderer, grid[x][y]->sprite);
 
             window->add_object(grid[x][y]);
         }
@@ -406,13 +409,24 @@ void tetris()
             loop_count = 0;
         }
 
+        // TODO
+        SDL_Delay(2);
+
         // Redraw screen
-        window->draw(2);
+        window->draw();
     }
 
     SDL_Quit();
 
     delete window;
+
+    for (int x = 0; x < GRID_SIZE_X; x++) {
+        for (int y = 0; y < GRID_SIZE_Y; y++) {
+            SDL_FreeSurface(grid[x][y]->sprite);
+            SDL_DestroyTexture(grid[x][y]->texture);
+            delete grid[x][y];
+        }
+    }
 
     return;
 }
