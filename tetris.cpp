@@ -1,6 +1,7 @@
 #include "graphics.h"
 #include <SDL2/SDL.h>
 #include <time.h>
+#include <cstdint>
 
 #define RES_X 800
 #define RES_Y 800
@@ -21,9 +22,6 @@
 #define MOVE_DOWN 0
 #define MOVE_LEFT 1
 #define MOVE_RIGHT 2
-
-
-SDL_Event input;
 
 void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
 {
@@ -299,13 +297,17 @@ void tetris()
     bool down = false;
     bool key_pressed = false;
 
+    SDL_Event input;
+
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     int tetrominoe[4][2];
     int current;
     int next = -1;
     int remove_lines[4] = {-1, -1, -1, -1};
 
-    int loop_count = 0;
+    timespec last_move {0, 0};
+    timespec now;
+    uint64_t timediff;
 
     srand(time(NULL));
 
@@ -398,7 +400,10 @@ void tetris()
             key_pressed = true;
         }
 
-        if (++loop_count == 100) {
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        timediff = ((now.tv_sec - last_move.tv_sec) * 1000000000) + (now.tv_nsec - last_move.tv_nsec);
+
+        if (timediff > 600000000) {
             if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
                 get_remove_lines(grid, remove_lines);
                 do_remove_lines(grid, remove_lines);
@@ -407,11 +412,8 @@ void tetris()
                 next = -1;
             }
 
-            loop_count = 0;
+            last_move = now;
         }
-
-        // TODO
-        SDL_Delay(2);
 
         // Redraw screen
         window->draw();
