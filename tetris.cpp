@@ -1,5 +1,6 @@
 #include "graphics.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <time.h>
 #include <cstdint>
 
@@ -399,6 +400,7 @@ void tetris()
 
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
+    graphics_obj *next_img;
     int tetrominoe[4][2];
     int next_tetrominoe[4][2];
     int current;
@@ -412,6 +414,20 @@ void tetris()
     srand(time(NULL));
 
     graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
+
+    next_img = new graphics_obj;
+    next_img->sprite = IMG_Load("next.png");
+    next_img->texture = SDL_CreateTextureFromSurface(window->renderer, next_img->sprite);
+    next_img->draw_pos_x = 480;
+    next_img->draw_pos_y = 120;
+    next_img->draw_active = true;
+    next_img->pos_x = &next_img->draw_pos_x;
+    next_img->pos_y = &next_img->draw_pos_y;
+    next_img->size_x = 200;
+    next_img->size_y = 250;
+    next_img->active = &next_img->draw_active;
+
+    window->add_object(next_img);
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
@@ -542,6 +558,10 @@ void tetris()
     SDL_Quit();
 
     delete window;
+
+    SDL_FreeSurface(next_img->sprite);
+    SDL_DestroyTexture(next_img->texture);
+    delete next_img;
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
