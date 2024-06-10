@@ -33,8 +33,25 @@
 #define STATE_DESCEND 1
 #define STATE_ROW_FLASH 2
 #define STATE_ROW_REMOVE 3
+#define STATE_GAME_OVER 4
 
-void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
+bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
+{
+    return tetrominoe[0][0] >= 0 && tetrominoe[0][0] < GRID_SIZE_X
+        && tetrominoe[0][1] >= 0 && tetrominoe[0][1] < GRID_SIZE_Y
+        && tetrominoe[1][0] >= 0 && tetrominoe[1][0] < GRID_SIZE_X
+        && tetrominoe[1][1] >= 0 && tetrominoe[1][1] < GRID_SIZE_Y
+        && tetrominoe[2][0] >= 0 && tetrominoe[2][0] < GRID_SIZE_X
+        && tetrominoe[2][1] >= 0 && tetrominoe[2][1] < GRID_SIZE_Y
+        && tetrominoe[3][0] >= 0 && tetrominoe[3][0] < GRID_SIZE_X
+        && tetrominoe[3][1] >= 0 && tetrominoe[3][1] < GRID_SIZE_Y
+        && !*grid[tetrominoe[0][0]][tetrominoe[0][1]]->active
+        && !*grid[tetrominoe[1][0]][tetrominoe[1][1]]->active
+        && !*grid[tetrominoe[2][0]][tetrominoe[2][1]]->active
+        && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
+}
+
+bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
 {
     switch (piece) {
         case PIECE_LINE:
@@ -115,10 +132,16 @@ void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
             break;
     }
 
-    *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
-    *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
-    *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
-    *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+    if (check_tetrominoe_collision(tetrominoe, grid)) {
+        *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
+        *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
+        *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
+        *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+
+        return true;
+    }
+
+    return false;
 }
 
 void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y], int piece)
@@ -224,22 +247,6 @@ void copy_tetrominoe(int src_tetrominoe[4][2], int dst_tetrominoe[4][2])
     dst_tetrominoe[2][1] = src_tetrominoe[2][1];
     dst_tetrominoe[3][0] = src_tetrominoe[3][0];
     dst_tetrominoe[3][1] = src_tetrominoe[3][1];
-}
-
-bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
-{
-    return tetrominoe[0][0] >= 0 && tetrominoe[0][0] < GRID_SIZE_X
-        && tetrominoe[0][1] >= 0 && tetrominoe[0][1] < GRID_SIZE_Y
-        && tetrominoe[1][0] >= 0 && tetrominoe[1][0] < GRID_SIZE_X
-        && tetrominoe[1][1] >= 0 && tetrominoe[1][1] < GRID_SIZE_Y
-        && tetrominoe[2][0] >= 0 && tetrominoe[2][0] < GRID_SIZE_X
-        && tetrominoe[2][1] >= 0 && tetrominoe[2][1] < GRID_SIZE_Y
-        && tetrominoe[3][0] >= 0 && tetrominoe[3][0] < GRID_SIZE_X
-        && tetrominoe[3][1] >= 0 && tetrominoe[3][1] < GRID_SIZE_Y
-        && !*grid[tetrominoe[0][0]][tetrominoe[0][1]]->active
-        && !*grid[tetrominoe[1][0]][tetrominoe[1][1]]->active
-        && !*grid[tetrominoe[2][0]][tetrominoe[2][1]]->active
-        && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
 }
 
 bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int direction)
@@ -423,6 +430,7 @@ void tetris()
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
     graphics_obj *next_img;
+    graphics_obj *game_over;
     int tetrominoe[4][2];
     int next_tetrominoe[4][2];
     int current;
@@ -489,6 +497,20 @@ void tetris()
         }
     }
 
+    game_over = new graphics_obj;
+    game_over->sprite = IMG_Load("game_over.png");
+    game_over->texture = SDL_CreateTextureFromSurface(window->renderer, game_over->sprite);
+    game_over->draw_pos_x = 343;
+    game_over->draw_pos_y = 390;
+    game_over->draw_active = false;
+    game_over->pos_x = &game_over->draw_pos_x;
+    game_over->pos_y = &game_over->draw_pos_y;
+    game_over->size_x = 115;
+    game_over->size_y = 20;
+    game_over->active = &game_over->draw_active;
+
+    window->add_object(game_over);
+
     current = rand() % 7;
 
     create_tetrominoe(tetrominoe, grid, current);
@@ -549,7 +571,7 @@ void tetris()
             key_pressed = false;
         }
 
-        if (!key_pressed && (left || right || up || down)) {
+        if (state != STATE_GAME_OVER && !key_pressed && (left || right || up || down)) {
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { move_tetrominoe(tetrominoe, grid, MOVE_DOWN); }
@@ -563,10 +585,13 @@ void tetris()
 
         switch (state) {
             case STATE_CREATE_PIECE:
-                create_tetrominoe(tetrominoe, grid, next);
-                current = next;
-                next = -1;
-                state = STATE_DESCEND;
+                if (create_tetrominoe(tetrominoe, grid, next)) {
+                    current = next;
+                    next = -1;
+                    state = STATE_DESCEND;
+                } else {
+                    state = STATE_GAME_OVER;
+                }
 
                 break;
 
@@ -605,6 +630,11 @@ void tetris()
                 state = STATE_CREATE_PIECE;
 
                 break;
+
+            case STATE_GAME_OVER:
+                game_over->draw_active = true;
+
+                break;
         }
 
         // Redraw screen
@@ -634,6 +664,10 @@ void tetris()
             delete next_grid[x][y];
         }
     }
+
+    SDL_FreeSurface(game_over->sprite);
+    SDL_DestroyTexture(game_over->texture);
+    delete game_over;
 
     return;
 }
