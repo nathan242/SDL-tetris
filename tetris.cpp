@@ -29,6 +29,11 @@
 #define MOVE_LEFT 1
 #define MOVE_RIGHT 2
 
+#define STATE_CREATE_PIECE 0
+#define STATE_DESCEND 1
+#define STATE_ROW_FLASH 2
+#define STATE_ROW_REMOVE 3
+
 void create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
 {
     switch (piece) {
@@ -347,7 +352,7 @@ void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
 }
 
-void get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
+int get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
 {
     int remove_count = 0;
 
@@ -362,6 +367,20 @@ void get_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_l
 
         next_line:
         continue;
+    }
+
+    return remove_count;
+}
+
+void cycle_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lines[4])
+{
+    for (int i = 0; i < 4; i++) {
+        if (remove_lines[i] == -1) { continue; }
+
+        // Cycle the line
+        for (int x = 0; x < GRID_SIZE_X; x++) {
+            *grid[x][remove_lines[i]]->active = !*grid[x][remove_lines[i]]->active;
+        }
     }
 }
 
@@ -395,6 +414,9 @@ void tetris()
     bool up = false;
     bool down = false;
     bool key_pressed = false;
+
+    int state = STATE_DESCEND;
+    int flash_lines_count = 0;
 
     SDL_Event input;
 
@@ -539,16 +561,50 @@ void tetris()
         clock_gettime(CLOCK_MONOTONIC, &now);
         timediff = ((now.tv_sec - last_move.tv_sec) * 1000000000) + (now.tv_nsec - last_move.tv_nsec);
 
-        if (timediff > 600000000) {
-            if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
-                get_remove_lines(grid, remove_lines);
-                do_remove_lines(grid, remove_lines);
+        switch (state) {
+            case STATE_CREATE_PIECE:
                 create_tetrominoe(tetrominoe, grid, next);
                 current = next;
                 next = -1;
-            }
+                state = STATE_DESCEND;
 
-            last_move = now;
+                break;
+
+            case STATE_DESCEND:
+                if (timediff > 600000000) {
+                    if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
+                        if (get_remove_lines(grid, remove_lines) > 0) {
+                            state = STATE_ROW_FLASH;
+                        } else {
+                            state = STATE_CREATE_PIECE;
+                        }
+                    }
+
+                    last_move = now;
+                }
+
+                break;
+
+            case STATE_ROW_FLASH:
+                if (timediff > 100000000) {
+                    if (flash_lines_count < 4) {
+                        cycle_remove_lines(grid, remove_lines);
+                        flash_lines_count++;
+                    } else {
+                        flash_lines_count = 0;
+                        state = STATE_ROW_REMOVE;
+                    }
+
+                    last_move = now;
+                }
+
+                break;
+
+            case STATE_ROW_REMOVE:
+                do_remove_lines(grid, remove_lines);
+                state = STATE_CREATE_PIECE;
+
+                break;
         }
 
         // Redraw screen
