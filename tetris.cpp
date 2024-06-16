@@ -53,87 +53,91 @@ bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SI
         && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
 }
 
-bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
+void setup_tetrominoe(int tetrominoe[4][2], int piece, int offset_x)
 {
-    // Todo - This is duplicated in the next function
     switch (piece) {
         case PIECE_LINE:
-            tetrominoe[0][0] = 4;
+            tetrominoe[0][0] = offset_x + 0;
             tetrominoe[0][1] = 1;
-            tetrominoe[1][0] = 5;
+            tetrominoe[1][0] = offset_x + 1;
             tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 6;
+            tetrominoe[2][0] = offset_x + 2;
             tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 7;
+            tetrominoe[3][0] = offset_x + 3;
             tetrominoe[3][1] = 1;
             break;
 
         case PIECE_L:
-            tetrominoe[0][0] = 4;
+            tetrominoe[0][0] = offset_x + 0;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 6;
+            tetrominoe[1][0] = offset_x + 2;
             tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 5;
+            tetrominoe[2][0] = offset_x + 1;
             tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 6;
+            tetrominoe[3][0] = offset_x + 2;
             tetrominoe[3][1] = 0;
             break;
 
         case PIECE_REVERSE_L:
-            tetrominoe[0][0] = 4;
+            tetrominoe[0][0] = offset_x + 0;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 4;
+            tetrominoe[1][0] = offset_x + 0;
             tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 5;
+            tetrominoe[2][0] = offset_x + 1;
             tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 6;
+            tetrominoe[3][0] = offset_x + 2;
             tetrominoe[3][1] = 0;
             break;
 
         case PIECE_SQUARE:
-            tetrominoe[0][0] = 5;
+            tetrominoe[0][0] = offset_x + 1;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 6;
+            tetrominoe[1][0] = offset_x + 2;
             tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 5;
+            tetrominoe[2][0] = offset_x + 1;
             tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 6;
+            tetrominoe[3][0] = offset_x + 2;
             tetrominoe[3][1] = 1;
             break;
 
         case PIECE_5:
-            tetrominoe[0][0] = 5;
+            tetrominoe[0][0] = offset_x + 1;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 6;
+            tetrominoe[1][0] = offset_x + 2;
             tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 4;
+            tetrominoe[2][0] = offset_x + 0;
             tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 5;
+            tetrominoe[3][0] = offset_x + 1;
             tetrominoe[3][1] = 1;
             break;
 
         case PIECE_S:
-            tetrominoe[0][0] = 4;
+            tetrominoe[0][0] = offset_x + 0;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 5;
+            tetrominoe[1][0] = offset_x + 1;
             tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 5;
+            tetrominoe[2][0] = offset_x + 1;
             tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 6;
+            tetrominoe[3][0] = offset_x + 2;
             tetrominoe[3][1] = 1;
             break;
 
         case PIECE_T:
-            tetrominoe[0][0] = 4;
+            tetrominoe[0][0] = offset_x + 0;
             tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 5;
+            tetrominoe[1][0] = offset_x + 1;
             tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 6;
+            tetrominoe[2][0] = offset_x + 2;
             tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 5;
+            tetrominoe[3][0] = offset_x + 1;
             tetrominoe[3][1] = 1;
             break;
     }
+}
+
+bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
+{
+    setup_tetrominoe(tetrominoe, piece, 4);
 
     if (check_tetrominoe_collision(tetrominoe, grid)) {
         *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
@@ -154,84 +158,7 @@ bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
 
 void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
 {
-    switch (piece) {
-        case PIECE_LINE:
-            tetrominoe[0][0] = 0;
-            tetrominoe[0][1] = 1;
-            tetrominoe[1][0] = 1;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 2;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 3;
-            tetrominoe[3][1] = 1;
-            break;
-
-        case PIECE_L:
-            tetrominoe[0][0] = 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 2;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 1;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 2;
-            tetrominoe[3][1] = 0;
-            break;
-
-        case PIECE_REVERSE_L:
-            tetrominoe[0][0] = 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 0;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = 1;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 2;
-            tetrominoe[3][1] = 0;
-            break;
-
-        case PIECE_SQUARE:
-            tetrominoe[0][0] = 1;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 2;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 1;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 2;
-            tetrominoe[3][1] = 1;
-            break;
-
-        case PIECE_5:
-            tetrominoe[0][0] = 1;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 2;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 0;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 1;
-            tetrominoe[3][1] = 1;
-            break;
-
-        case PIECE_S:
-            tetrominoe[0][0] = 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 1;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 1;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = 2;
-            tetrominoe[3][1] = 1;
-            break;
-
-        case PIECE_T:
-            tetrominoe[0][0] = 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = 1;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = 2;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = 1;
-            tetrominoe[3][1] = 1;
-            break;
-    }
+    setup_tetrominoe(tetrominoe, piece, 0);
 
     for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
         for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
