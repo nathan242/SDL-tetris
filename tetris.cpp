@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <time.h>
 #include <cstdint>
+#include <unistd.h>
 
 #define RES_X 800
 #define RES_Y 800
@@ -405,6 +406,8 @@ void tetris()
 
     SDL_Surface *temp_surface;
     SDL_Texture *block_colours[PIECE_TYPES];
+
+    chdir(SDL_GetBasePath());
 
     graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
 
