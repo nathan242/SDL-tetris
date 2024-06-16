@@ -37,6 +37,9 @@
 #define STATE_ROW_REMOVE 3
 #define STATE_GAME_OVER 4
 
+#define INITIAL_FALL_DELAY 600000000
+#define DROP_FALL_DELAY 50000000
+
 bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
 {
     return tetrominoe[0][0] >= 0 && tetrominoe[0][0] < GRID_SIZE_X
@@ -379,6 +382,7 @@ void tetris()
     bool up = false;
     bool down = false;
     bool key_pressed = false;
+    bool down_pressed = false;
 
     int state = STATE_DESCEND;
     int flash_lines_count = 0;
@@ -558,10 +562,14 @@ void tetris()
             key_pressed = false;
         }
 
+        if (!down) {
+            down_pressed = false;
+        }
+
         if (state != STATE_GAME_OVER && !key_pressed && (left || right || up || down)) {
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
-            if (down) { move_tetrominoe(tetrominoe, grid, MOVE_DOWN); }
+            if (down) { down_pressed = true; }
             if (up) { rotate_tetrominoe(tetrominoe, grid, 0); }
 
             key_pressed = true;
@@ -576,6 +584,7 @@ void tetris()
                     current = next;
                     next = -1;
                     state = STATE_DESCEND;
+                    down_pressed = false;
                 } else {
                     state = STATE_GAME_OVER;
                 }
@@ -583,7 +592,7 @@ void tetris()
                 break;
 
             case STATE_DESCEND:
-                if (timediff > 600000000) {
+                if (timediff > (down_pressed ? DROP_FALL_DELAY : INITIAL_FALL_DELAY)) {
                     if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
                         if (get_remove_lines(grid, remove_lines) > 0) {
                             state = STATE_ROW_FLASH;
