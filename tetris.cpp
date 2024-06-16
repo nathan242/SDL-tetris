@@ -17,6 +17,8 @@
 #define NEXT_OFFSET_X 500
 #define NEXT_OFFSET_Y 200
 
+#define PIECE_TYPES 7
+
 #define PIECE_LINE 0
 #define PIECE_L 1
 #define PIECE_REVERSE_L 2
@@ -51,8 +53,9 @@ bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SI
         && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
 }
 
-bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int piece)
+bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
 {
+    // Todo - This is duplicated in the next function
     switch (piece) {
         case PIECE_LINE:
             tetrominoe[0][0] = 4;
@@ -138,13 +141,18 @@ bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
         *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
         *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
 
+        grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture = block_colours[piece];
+        grid[tetrominoe[1][0]][tetrominoe[1][1]]->texture = block_colours[piece];
+        grid[tetrominoe[2][0]][tetrominoe[2][1]]->texture = block_colours[piece];
+        grid[tetrominoe[3][0]][tetrominoe[3][1]]->texture = block_colours[piece];
+
         return true;
     }
 
     return false;
 }
 
-void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y], int piece)
+void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
 {
     switch (piece) {
         case PIECE_LINE:
@@ -235,6 +243,11 @@ void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_S
     *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
     *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = true;
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = true;
+
+    grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture = block_colours[piece];
+    grid[tetrominoe[1][0]][tetrominoe[1][1]]->texture = block_colours[piece];
+    grid[tetrominoe[2][0]][tetrominoe[2][1]]->texture = block_colours[piece];
+    grid[tetrominoe[3][0]][tetrominoe[3][1]]->texture = block_colours[piece];
 }
 
 void copy_tetrominoe(int src_tetrominoe[4][2], int dst_tetrominoe[4][2])
@@ -253,6 +266,7 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
 {
     bool moved = false;
     int new_tetrominoe[4][2];
+    SDL_Texture *block_colour;
 
     copy_tetrominoe(tetrominoe, new_tetrominoe);
 
@@ -282,10 +296,17 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
     *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
 
+    block_colour = grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture;
+
     if (check_tetrominoe_collision(new_tetrominoe, grid)) {
         copy_tetrominoe(new_tetrominoe, tetrominoe);
         moved = true;
     }
+
+    grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture = block_colour;
+    grid[tetrominoe[1][0]][tetrominoe[1][1]]->texture = block_colour;
+    grid[tetrominoe[2][0]][tetrominoe[2][1]]->texture = block_colour;
+    grid[tetrominoe[3][0]][tetrominoe[3][1]]->texture = block_colour;
 
     *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
     *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
@@ -302,6 +323,8 @@ void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
     int new_tetrominoe[4][2];
     int lowest_x;
     int lowest_y;
+
+    SDL_Texture *block_colour;
 
     lowest_x = tetrominoe[0][0];
     if (lowest_x > tetrominoe[1][0]) lowest_x = tetrominoe[1][0];
@@ -349,9 +372,16 @@ void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
     *grid[tetrominoe[2][0]][tetrominoe[2][1]]->active = false;
     *grid[tetrominoe[3][0]][tetrominoe[3][1]]->active = false;
 
+    block_colour = grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture;
+
     if (check_tetrominoe_collision(new_tetrominoe, grid)) {
         copy_tetrominoe(new_tetrominoe, tetrominoe);
     }
+
+    grid[tetrominoe[0][0]][tetrominoe[0][1]]->texture = block_colour;
+    grid[tetrominoe[1][0]][tetrominoe[1][1]]->texture = block_colour;
+    grid[tetrominoe[2][0]][tetrominoe[2][1]]->texture = block_colour;
+    grid[tetrominoe[3][0]][tetrominoe[3][1]]->texture = block_colour;
 
     *grid[tetrominoe[0][0]][tetrominoe[0][1]]->active = true;
     *grid[tetrominoe[1][0]][tetrominoe[1][1]]->active = true;
@@ -404,6 +434,7 @@ void do_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_li
         // Move above lines down
         for (int y = remove_lines[i]; y != 0; y--) {
             for (int x = 0; x < GRID_SIZE_X; x++) {
+                grid[x][y]->texture = grid[x][y-1]->texture;
                 *grid[x][y]->active = *grid[x][y-1]->active;
             }
         }
@@ -441,9 +472,44 @@ void tetris()
     timespec now;
     uint64_t timediff;
 
-    srand(time(NULL));
+    SDL_Surface *temp_surface;
+    SDL_Texture *block_colours[PIECE_TYPES];
 
     graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
+
+    srand(time(NULL));
+
+    temp_surface = SDL_CreateRGBSurface(0, BLOCK_SIZE, BLOCK_SIZE, 32, 0, 0, 0, 0);
+
+    // White
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 255, 255));
+    block_colours[0] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Red
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 0, 0));
+    block_colours[1] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Green
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 255, 0));
+    block_colours[2] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Blue
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 0, 255));
+    block_colours[3] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Purple
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 160, 32, 240));
+    block_colours[4] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Yellow
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 255, 0));
+    block_colours[5] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    // Cyan
+    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 255, 255));
+    block_colours[6] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+
+    SDL_FreeSurface(temp_surface);
 
     next_img = new graphics_obj;
     next_img->sprite = IMG_Load("next.png");
@@ -462,7 +528,6 @@ void tetris()
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
             grid[x][y] = new graphics_obj;
-            grid[x][y]->sprite = SDL_CreateRGBSurface(0, BLOCK_SIZE, BLOCK_SIZE, 32, 0, 0, 0, 0);
             grid[x][y]->draw_pos_x = x*BLOCK_SIZE;
             grid[x][y]->draw_pos_y = y*BLOCK_SIZE;
             grid[x][y]->draw_active = false;
@@ -471,8 +536,6 @@ void tetris()
             grid[x][y]->size_x = BLOCK_SIZE;
             grid[x][y]->size_y = BLOCK_SIZE;
             grid[x][y]->active = &grid[x][y]->draw_active;
-            SDL_FillRect(grid[x][y]->sprite, NULL, SDL_MapRGB(grid[x][y]->sprite->format, 255, 255, 255));
-            grid[x][y]->texture = SDL_CreateTextureFromSurface(window->renderer, grid[x][y]->sprite);
 
             window->add_object(grid[x][y]);
         }
@@ -481,7 +544,6 @@ void tetris()
     for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
         for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
             next_grid[x][y] = new graphics_obj;
-            next_grid[x][y]->sprite = SDL_CreateRGBSurface(0, BLOCK_SIZE, BLOCK_SIZE, 32, 0, 0, 0, 0);
             next_grid[x][y]->draw_pos_x = x*BLOCK_SIZE+NEXT_OFFSET_X;
             next_grid[x][y]->draw_pos_y = y*BLOCK_SIZE+NEXT_OFFSET_Y;
             next_grid[x][y]->draw_active = false;
@@ -490,8 +552,6 @@ void tetris()
             next_grid[x][y]->size_x = BLOCK_SIZE;
             next_grid[x][y]->size_y = BLOCK_SIZE;
             next_grid[x][y]->active = &next_grid[x][y]->draw_active;
-            SDL_FillRect(next_grid[x][y]->sprite, NULL, SDL_MapRGB(next_grid[x][y]->sprite->format, 255, 255, 255));
-            next_grid[x][y]->texture = SDL_CreateTextureFromSurface(window->renderer, next_grid[x][y]->sprite);
 
             window->add_object(next_grid[x][y]);
         }
@@ -513,7 +573,7 @@ void tetris()
 
     current = rand() % 7;
 
-    create_tetrominoe(tetrominoe, grid, current);
+    create_tetrominoe(tetrominoe, grid, block_colours, current);
 
     // Main loop
     while (quit==false)
@@ -564,7 +624,7 @@ void tetris()
 
         if (next == -1) {
             next = rand() % 7;
-            create_next_tetrominoe(next_tetrominoe, next_grid, next);
+            create_next_tetrominoe(next_tetrominoe, next_grid, block_colours, next);
         }
 
         if (!left && !right && !up && !down) {
@@ -585,7 +645,7 @@ void tetris()
 
         switch (state) {
             case STATE_CREATE_PIECE:
-                if (create_tetrominoe(tetrominoe, grid, next)) {
+                if (create_tetrominoe(tetrominoe, grid, block_colours, next)) {
                     current = next;
                     next = -1;
                     state = STATE_DESCEND;
@@ -651,18 +711,18 @@ void tetris()
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
-            SDL_FreeSurface(grid[x][y]->sprite);
-            SDL_DestroyTexture(grid[x][y]->texture);
             delete grid[x][y];
         }
     }
 
     for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
         for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
-            SDL_FreeSurface(next_grid[x][y]->sprite);
-            SDL_DestroyTexture(next_grid[x][y]->texture);
             delete next_grid[x][y];
         }
+    }
+
+    for (int x = 0; x < PIECE_TYPES; x++) {
+        SDL_DestroyTexture(block_colours[x]);
     }
 
     SDL_FreeSurface(game_over->sprite);
