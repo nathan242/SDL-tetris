@@ -418,6 +418,7 @@ void tetris()
     int flash_lines_count = 0;
     int lines = 0;
     int level = 1;
+    int fall_delay = INITIAL_FALL_DELAY;
 
     SDL_Event input;
 
@@ -703,7 +704,7 @@ void tetris()
                 break;
 
             case STATE_DESCEND:
-                if (timediff > (down_pressed ? DROP_FALL_DELAY : INITIAL_FALL_DELAY)) {
+                if (timediff > (down_pressed ? DROP_FALL_DELAY : fall_delay)) {
                     if (!move_tetrominoe(tetrominoe, grid, MOVE_DOWN)) {
                         if (get_remove_lines(grid, remove_lines) > 0) {
                             state = STATE_ROW_FLASH;
@@ -736,6 +737,14 @@ void tetris()
                 lines += do_remove_lines(grid, remove_lines);
                 if (lines > 9999) { lines = 9999; }
                 set_lines_display(line_numbers, numbers, lines);
+
+                if (level != 9 && lines >= (level * 10)) {
+                    level++;
+                    fall_delay -= 30000000;
+
+                    level_number->texture = numbers[level];
+                }
+
                 state = STATE_CREATE_PIECE;
 
                 break;
