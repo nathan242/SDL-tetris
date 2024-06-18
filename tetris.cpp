@@ -740,7 +740,7 @@ void tetris()
 
                 if (level != 9 && lines >= (level * 10)) {
                     level++;
-                    fall_delay -= 30000000;
+                    fall_delay -= 60000000;
 
                     level_number->texture = numbers[level];
                 }
