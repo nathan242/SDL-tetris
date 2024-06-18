@@ -407,7 +407,10 @@ void tetris()
     SDL_Surface *temp_surface;
     SDL_Texture *block_colours[PIECE_TYPES];
 
-    chdir(SDL_GetBasePath());
+    char *base_path = SDL_GetBasePath();
+
+    chdir(base_path);
+    free(base_path);
 
     graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
 
