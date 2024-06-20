@@ -5,6 +5,10 @@
 #include <cstdint>
 #include <unistd.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #define RES_X 800
 #define RES_Y 800
 #define BPP 32
@@ -40,6 +44,50 @@
 
 #define INITIAL_FALL_DELAY 600000000
 #define DROP_FALL_DELAY 50000000
+
+bool quit = false;
+bool left = false;
+bool right = false;
+bool up = false;
+bool down = false;
+bool key_pressed = false;
+bool down_pressed = false;
+
+int state = STATE_DESCEND;
+int flash_lines_count = 0;
+int lines = 0;
+int level = 1;
+int fall_delay = INITIAL_FALL_DELAY;
+
+SDL_Event input;
+
+graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
+graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
+graphics_obj *next_img;
+graphics_obj *lines_img;
+graphics_obj *level_img;
+graphics_obj *game_over;
+graphics_obj *line_numbers[4];
+graphics_obj *level_number;
+int tetrominoe[4][2];
+int next_tetrominoe[4][2];
+int current;
+int next = -1;
+int remove_lines[4] = {-1, -1, -1, -1};
+char num_image[] = "x.png";
+char num_str[2];
+
+timespec last_move {0, 0};
+timespec now;
+uint64_t timediff;
+
+SDL_Surface *temp_surface;
+SDL_Texture *block_colours[PIECE_TYPES];
+SDL_Texture *numbers[10];
+
+char *base_path;
+
+graphics *window;
 
 bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
 {
@@ -429,55 +477,14 @@ void set_lines_display(graphics_obj *line_numbers[4], SDL_Texture *numbers[10], 
     }
 }
 
-void tetris()
+void tetris_init()
 {
-    // bool vars for control directions and quit event
-    bool quit = false;
-    bool left = false;
-    bool right = false;
-    bool up = false;
-    bool down = false;
-    bool key_pressed = false;
-    bool down_pressed = false;
-
-    int state = STATE_DESCEND;
-    int flash_lines_count = 0;
-    int lines = 0;
-    int level = 1;
-    int fall_delay = INITIAL_FALL_DELAY;
-
-    SDL_Event input;
-
-    graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
-    graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
-    graphics_obj *next_img;
-    graphics_obj *lines_img;
-    graphics_obj *level_img;
-    graphics_obj *game_over;
-    graphics_obj *line_numbers[4];
-    graphics_obj *level_number;
-    int tetrominoe[4][2];
-    int next_tetrominoe[4][2];
-    int current;
-    int next = -1;
-    int remove_lines[4] = {-1, -1, -1, -1};
-    char num_image[] = "x.png";
-    char num_str[2];
-
-    timespec last_move {0, 0};
-    timespec now;
-    uint64_t timediff;
-
-    SDL_Surface *temp_surface;
-    SDL_Texture *block_colours[PIECE_TYPES];
-    SDL_Texture *numbers[10];
-
-    char *base_path = SDL_GetBasePath();
+    base_path = SDL_GetBasePath();
 
     chdir(base_path);
     free(base_path);
 
-    graphics *window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
+    window = new graphics("SDL TETRIS", RES_X, RES_Y, BPP);
 
     srand(time(NULL));
 
@@ -644,9 +651,11 @@ void tetris()
 
     create_tetrominoe(tetrominoe, grid, block_colours, current);
 
-    // Main loop
-    while (quit==false)
-    {
+}
+
+void tetris_loop()
+{
+    if (quit==false) {
         // Read inputs
         while (SDL_PollEvent(&input))
         {
@@ -783,60 +792,64 @@ void tetris()
 
         // Redraw screen
         window->draw();
-    }
+    } else {
+        SDL_Quit();
 
-    SDL_Quit();
+        delete window;
 
-    delete window;
+        SDL_FreeSurface(next_img->sprite);
+        SDL_DestroyTexture(next_img->texture);
+        delete next_img;
 
-    SDL_FreeSurface(next_img->sprite);
-    SDL_DestroyTexture(next_img->texture);
-    delete next_img;
+        SDL_FreeSurface(lines_img->sprite);
+        SDL_DestroyTexture(lines_img->texture);
+        delete lines_img;
 
-    SDL_FreeSurface(lines_img->sprite);
-    SDL_DestroyTexture(lines_img->texture);
-    delete lines_img;
+        SDL_FreeSurface(level_img->sprite);
+        SDL_DestroyTexture(level_img->texture);
+        delete level_img;
 
-    SDL_FreeSurface(level_img->sprite);
-    SDL_DestroyTexture(level_img->texture);
-    delete level_img;
-
-    for (int i = 0; i < 10; i++) {
-        SDL_DestroyTexture(numbers[i]);
-    }
-
-    for (int i = 0; i < 4; i++) {
-        delete line_numbers[i];
-    }
-
-    delete level_number;
-
-    for (int x = 0; x < GRID_SIZE_X; x++) {
-        for (int y = 0; y < GRID_SIZE_Y; y++) {
-            delete grid[x][y];
+        for (int i = 0; i < 10; i++) {
+            SDL_DestroyTexture(numbers[i]);
         }
-    }
 
-    for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
-        for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
-            delete next_grid[x][y];
+        for (int i = 0; i < 4; i++) {
+            delete line_numbers[i];
         }
-    }
 
-    for (int x = 0; x < PIECE_TYPES; x++) {
-        SDL_DestroyTexture(block_colours[x]);
-    }
+        delete level_number;
 
-    SDL_FreeSurface(game_over->sprite);
-    SDL_DestroyTexture(game_over->texture);
-    delete game_over;
+        for (int x = 0; x < GRID_SIZE_X; x++) {
+            for (int y = 0; y < GRID_SIZE_Y; y++) {
+                delete grid[x][y];
+            }
+        }
+
+        for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
+            for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
+                delete next_grid[x][y];
+            }
+        }
+
+        for (int x = 0; x < PIECE_TYPES; x++) {
+            SDL_DestroyTexture(block_colours[x]);
+        }
+
+        SDL_FreeSurface(game_over->sprite);
+        SDL_DestroyTexture(game_over->texture);
+        delete game_over;
+
+        emscripten_cancel_main_loop();
+    }
 
     return;
 }
 
 int main (int argc, char *argv[])
 {
-    tetris();
+    tetris_init();
+    emscripten_set_main_loop(tetris_loop, 0, 1);
+    emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
     return 0;
 }
 
