@@ -678,7 +678,7 @@ void tetris()
             down_pressed = false;
         }
 
-        if (state != STATE_GAME_OVER && !key_pressed && (left || right || up || down)) {
+        if (state == STATE_DESCEND && !key_pressed && (left || right || up || down)) {
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { down_pressed = true; }
