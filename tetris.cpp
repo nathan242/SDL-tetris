@@ -247,13 +247,13 @@ bool move_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_
     return moved;
 }
 
-// TODO
 void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int type)
 {
     int temp_tetrominoe[4][2];
     int new_tetrominoe[4][2];
     int lowest_x;
     int lowest_y;
+    int max_ext;
 
     SDL_Texture *block_colour;
 
@@ -277,17 +277,43 @@ void rotate_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
     temp_tetrominoe[3][1] = tetrominoe[3][1] - lowest_y;
 
     switch (type) {
-        case 0:
-        default:
-            new_tetrominoe[0][0] = temp_tetrominoe[0][1];
-            new_tetrominoe[0][1] = 1-(temp_tetrominoe[0][0]-(4-2));
-            new_tetrominoe[1][0] = temp_tetrominoe[1][1];
-            new_tetrominoe[1][1] = 1-(temp_tetrominoe[1][0]-(4-2));
-            new_tetrominoe[2][0] = temp_tetrominoe[2][1];
-            new_tetrominoe[2][1] = 1-(temp_tetrominoe[2][0]-(4-2));
-            new_tetrominoe[3][0] = temp_tetrominoe[3][1];
-            new_tetrominoe[3][1] = 1-(temp_tetrominoe[3][0]-(4-2));
+        case PIECE_LINE:
+            max_ext = 4;
+            break;
+
+        case PIECE_L:
+            max_ext = 3;
+            break;
+
+        case PIECE_REVERSE_L:
+            max_ext = 3;
+            break;
+
+        case PIECE_SQUARE:
+            max_ext = 2;
+            break;
+
+        case PIECE_5:
+            max_ext = 3;
+            break;
+
+        case PIECE_S:
+            max_ext = 3;
+            break;
+
+        case PIECE_T:
+            max_ext = 3;
+            break;
     }
+
+    new_tetrominoe[0][0] = temp_tetrominoe[0][1];
+    new_tetrominoe[0][1] = 1-(temp_tetrominoe[0][0]-(max_ext-2));
+    new_tetrominoe[1][0] = temp_tetrominoe[1][1];
+    new_tetrominoe[1][1] = 1-(temp_tetrominoe[1][0]-(max_ext-2));
+    new_tetrominoe[2][0] = temp_tetrominoe[2][1];
+    new_tetrominoe[2][1] = 1-(temp_tetrominoe[2][0]-(max_ext-2));
+    new_tetrominoe[3][0] = temp_tetrominoe[3][1];
+    new_tetrominoe[3][1] = 1-(temp_tetrominoe[3][0]-(max_ext-2));
 
     new_tetrominoe[0][0] = new_tetrominoe[0][0] + lowest_x;
     new_tetrominoe[1][0] = new_tetrominoe[1][0] + lowest_x;
@@ -682,7 +708,7 @@ void tetris()
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { down_pressed = true; }
-            if (up) { rotate_tetrominoe(tetrominoe, grid, 0); }
+            if (up) { rotate_tetrominoe(tetrominoe, grid, current); }
 
             key_pressed = true;
         }
