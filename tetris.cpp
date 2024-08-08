@@ -37,6 +37,7 @@
 #define STATE_ROW_FLASH 2
 #define STATE_ROW_REMOVE 3
 #define STATE_GAME_OVER 4
+#define STATE_PAUSED 5
 
 #define INITIAL_FALL_DELAY 600000000
 #define DROP_FALL_DELAY 50000000
@@ -433,6 +434,7 @@ void tetris()
 {
     // bool vars for control directions and quit event
     bool quit = false;
+    bool pause = false;
     bool left = false;
     bool right = false;
     bool up = false;
@@ -454,6 +456,7 @@ void tetris()
     graphics_obj *lines_img;
     graphics_obj *level_img;
     graphics_obj *game_over;
+    graphics_obj *paused;
     graphics_obj *line_numbers[4];
     graphics_obj *level_number;
     int tetrominoe[4][2];
@@ -640,6 +643,20 @@ void tetris()
 
     window->add_object(game_over);
 
+    paused = new graphics_obj;
+    paused->sprite = IMG_Load("paused.png");
+    paused->texture = SDL_CreateTextureFromSurface(window->renderer, paused->sprite);
+    paused->draw_pos_x = 343;
+    paused->draw_pos_y = 390;
+    paused->draw_active = false;
+    paused->pos_x = &paused->draw_pos_x;
+    paused->pos_y = &paused->draw_pos_y;
+    paused->size_x = 115;
+    paused->size_y = 20;
+    paused->active = &paused->draw_active;
+
+    window->add_object(paused);
+
     current = rand() % 7;
 
     create_tetrominoe(tetrominoe, grid, block_colours, current);
@@ -670,6 +687,9 @@ void tetris()
                             case SDLK_q:
                                 quit = true;
                                 break;
+                            case SDLK_p:
+                                pause = true;
+                                break;
                         }
                         break;
                 case SDL_KEYUP:
@@ -687,6 +707,9 @@ void tetris()
                             case SDLK_DOWN:
                                 down = false;
                                 break;
+                            case SDLK_p:
+                                pause = false;
+                                break;
                         }
             }
         }
@@ -696,7 +719,7 @@ void tetris()
             create_next_tetrominoe(next_tetrominoe, next_grid, block_colours, next);
         }
 
-        if (!left && !right && !up && !down) {
+        if (!left && !right && !up && !down && !pause) {
             key_pressed = false;
         }
 
@@ -704,11 +727,17 @@ void tetris()
             down_pressed = false;
         }
 
-        if (state == STATE_DESCEND && !key_pressed && (left || right || up || down)) {
+        if (state == STATE_DESCEND && !key_pressed && (left || right || up || down || pause)) {
             if (left) { move_tetrominoe(tetrominoe, grid, MOVE_LEFT); }
             if (right) { move_tetrominoe(tetrominoe, grid, MOVE_RIGHT); }
             if (down) { down_pressed = true; }
             if (up) { rotate_tetrominoe(tetrominoe, grid, current); }
+            if (pause) { state = STATE_PAUSED; }
+
+            key_pressed = true;
+        } else if (state == STATE_PAUSED && !key_pressed && pause) {
+            paused->draw_active = false;
+            state = STATE_DESCEND;
 
             key_pressed = true;
         }
@@ -779,6 +808,11 @@ void tetris()
                 game_over->draw_active = true;
 
                 break;
+
+            case STATE_PAUSED:
+                paused->draw_active = true;
+
+                break;
         }
 
         // Redraw screen
@@ -830,6 +864,10 @@ void tetris()
     SDL_FreeSurface(game_over->sprite);
     SDL_DestroyTexture(game_over->texture);
     delete game_over;
+
+    SDL_FreeSurface(paused->sprite);
+    SDL_DestroyTexture(paused->texture);
+    delete paused;
 
     return;
 }
