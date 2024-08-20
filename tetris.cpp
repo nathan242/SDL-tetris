@@ -407,15 +407,15 @@ int do_remove_lines(graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y], int remove_lin
     return remove_count;
 }
 
-void set_lines_display(graphics_obj *line_numbers[4], SDL_Texture *numbers[10], int value)
+void set_numbers_display(graphics_obj *numbers_display[], size_t display_size, SDL_Texture *numbers[10], int value)
 {
     int value_tmp = value;
     int digit_count = 0;
     int digit_pos = 0;
-    int digits[4];
+    int digits[8];
 
-    for (int i = 0; i < 4; i++) {
-        line_numbers[i]->draw_active = false;
+    for (int i = 0; i < display_size; i++) {
+        numbers_display[i]->draw_active = false;
     }
 
     while (value_tmp) {
@@ -424,8 +424,8 @@ void set_lines_display(graphics_obj *line_numbers[4], SDL_Texture *numbers[10], 
     }
 
     for (int i = digit_count; i > 0; i--) {
-        line_numbers[digit_pos]->texture = numbers[digits[i-1]];
-        line_numbers[digit_pos]->draw_active = true;
+        numbers_display[digit_pos]->texture = numbers[digits[i-1]];
+        numbers_display[digit_pos]->draw_active = true;
         digit_pos++;
     }
 }
@@ -445,7 +445,9 @@ void tetris()
     int state = STATE_DESCEND;
     int flash_lines_count = 0;
     int lines = 0;
-    int level = 1;
+    int level = 0;
+    int score = 0;
+    int lines_removed;
     int fall_delay = INITIAL_FALL_DELAY;
 
     SDL_Event input;
@@ -455,10 +457,12 @@ void tetris()
     graphics_obj *next_img;
     graphics_obj *lines_img;
     graphics_obj *level_img;
+    graphics_obj *score_img;
     graphics_obj *game_over;
     graphics_obj *paused;
     graphics_obj *line_numbers[4];
     graphics_obj *level_number;
+    graphics_obj *score_numbers[8];
     int tetrominoe[4][2];
     int next_tetrominoe[4][2];
     int current;
@@ -558,6 +562,20 @@ void tetris()
 
     window->add_object(level_img);
 
+    score_img = new graphics_obj;
+    score_img->sprite = IMG_Load("score.png");
+    score_img->texture = SDL_CreateTextureFromSurface(window->renderer, score_img->sprite);
+    score_img->draw_pos_x = 480;
+    score_img->draw_pos_y = 500;
+    score_img->draw_active = true;
+    score_img->pos_x = &score_img->draw_pos_x;
+    score_img->pos_y = &score_img->draw_pos_y;
+    score_img->size_x = 120;
+    score_img->size_y = 40;
+    score_img->active = &score_img->draw_active;
+
+    window->add_object(score_img);
+
     for (int i = 0; i < 10; i++) {
         sprintf(num_str, "%d", i);
         num_image[0] = num_str[0];
@@ -585,7 +603,7 @@ void tetris()
     line_numbers[0]->draw_active = true;
 
     level_number = new graphics_obj;
-    level_number->texture = numbers[1];
+    level_number->texture = numbers[0];
     level_number->draw_pos_x = 600;
     level_number->draw_pos_y = 450;
     level_number->draw_active = true;
@@ -596,6 +614,23 @@ void tetris()
     level_number->active = &level_number->draw_active;
 
     window->add_object(level_number);
+
+    for (int i = 0; i < 8; i++) {
+        score_numbers[i] = new graphics_obj;
+        score_numbers[i]->draw_pos_x = 600+(i*(BLOCK_SIZE/2));
+        score_numbers[i]->draw_pos_y = 500;
+        score_numbers[i]->draw_active = false;
+        score_numbers[i]->pos_x = &score_numbers[i]->draw_pos_x;
+        score_numbers[i]->pos_y = &score_numbers[i]->draw_pos_y;
+        score_numbers[i]->size_x = 40;
+        score_numbers[i]->size_y = 40;
+        score_numbers[i]->active = &score_numbers[i]->draw_active;
+
+        window->add_object(score_numbers[i]);
+    }
+
+    score_numbers[0]->texture = numbers[0];
+    score_numbers[0]->draw_active = true;
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
@@ -789,11 +824,34 @@ void tetris()
                 break;
 
             case STATE_ROW_REMOVE:
-                lines += do_remove_lines(grid, remove_lines);
+                lines_removed = do_remove_lines(grid, remove_lines);
+                lines += lines_removed;
                 if (lines > 9999) { lines = 9999; }
-                set_lines_display(line_numbers, numbers, lines);
+                set_numbers_display(line_numbers, sizeof(line_numbers)/sizeof(line_numbers[0]), numbers, lines);
 
-                if (level != 9 && lines >= (level * 10)) {
+                switch (lines_removed) {
+                    case 1:
+                        score += 40 * (level + 1);
+                        break;
+
+                    case 2:
+                        score += 100 * (level + 1);
+                        break;
+
+                    case 3:
+                        score += 300 * (level + 1);
+                        break;
+
+                    case 4:
+                        score += 1200 * (level + 1);
+                        break;
+                }
+
+                if (score > 99999999) { score = 99999999; }
+
+                set_numbers_display(score_numbers, sizeof(score_numbers)/sizeof(score_numbers[0]), numbers, score);
+
+                if (level != 9 && lines >= (level * 10) + 10) {
                     level++;
                     fall_delay -= 60000000;
 
@@ -835,6 +893,10 @@ void tetris()
     SDL_DestroyTexture(level_img->texture);
     delete level_img;
 
+    SDL_FreeSurface(score_img->sprite);
+    SDL_DestroyTexture(score_img->texture);
+    delete score_img;
+
     for (int i = 0; i < 10; i++) {
         SDL_DestroyTexture(numbers[i]);
     }
@@ -844,6 +906,10 @@ void tetris()
     }
 
     delete level_number;
+
+    for (int i = 0; i < 8; i++) {
+        delete score_numbers[i];
+    }
 
     for (int x = 0; x < GRID_SIZE_X; x++) {
         for (int y = 0; y < GRID_SIZE_Y; y++) {
