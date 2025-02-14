@@ -67,6 +67,7 @@ SDL_Event input;
 
 graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
 graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
+graphics_obj *boundary_line;
 graphics_obj *next_img;
 graphics_obj *lines_img;
 graphics_obj *level_img;
@@ -527,6 +528,20 @@ void tetris_init()
 
     SDL_FreeSurface(temp_surface);
 
+    boundary_line = new graphics_obj;
+    boundary_line->sprite = IMG_Load("boundary_line.png");
+    boundary_line->texture = SDL_CreateTextureFromSurface(window->renderer, boundary_line->sprite);
+    boundary_line->draw_pos_x = 400;
+    boundary_line->draw_pos_y = 0;
+    boundary_line->draw_active = true;
+    boundary_line->pos_x = &boundary_line->draw_pos_x;
+    boundary_line->pos_y = &boundary_line->draw_pos_y;
+    boundary_line->size_x = 10;
+    boundary_line->size_y = 800;
+    boundary_line->active = &boundary_line->draw_active;
+
+    window->add_object(boundary_line);
+
     next_img = new graphics_obj;
     next_img->sprite = IMG_Load("next.png");
     next_img->texture = SDL_CreateTextureFromSurface(window->renderer, next_img->sprite);
@@ -888,6 +903,10 @@ void tetris_loop()
         SDL_Quit();
 
         delete window;
+
+        SDL_FreeSurface(boundary_line->sprite);
+        SDL_DestroyTexture(boundary_line->texture);
+        delete boundary_line;
 
         SDL_FreeSurface(next_img->sprite);
         SDL_DestroyTexture(next_img->texture);
