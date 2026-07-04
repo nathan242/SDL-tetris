@@ -585,7 +585,7 @@ void tetris()
     level_img->sprite = IMG_Load("textures/level.png");
     level_img->texture = SDL_CreateTextureFromSurface(window->renderer, level_img->sprite);
     level_img->draw_pos_x = 480;
-    level_img->draw_pos_y = 450;
+    level_img->draw_pos_y = 440;
     level_img->draw_active = true;
     level_img->pos_x = &level_img->draw_pos_x;
     level_img->pos_y = &level_img->draw_pos_y;
@@ -599,7 +599,7 @@ void tetris()
     score_img->sprite = IMG_Load("textures/score.png");
     score_img->texture = SDL_CreateTextureFromSurface(window->renderer, score_img->sprite);
     score_img->draw_pos_x = 480;
-    score_img->draw_pos_y = 500;
+    score_img->draw_pos_y = 480;
     score_img->draw_active = true;
     score_img->pos_x = &score_img->draw_pos_x;
     score_img->pos_y = &score_img->draw_pos_y;
@@ -638,7 +638,7 @@ void tetris()
     level_number = new graphics_obj;
     level_number->texture = numbers[0];
     level_number->draw_pos_x = 600;
-    level_number->draw_pos_y = 450;
+    level_number->draw_pos_y = 440;
     level_number->draw_active = true;
     level_number->pos_x = &level_number->draw_pos_x;
     level_number->pos_y = &level_number->draw_pos_y;
@@ -651,7 +651,7 @@ void tetris()
     for (int i = 0; i < 8; i++) {
         score_numbers[i] = new graphics_obj;
         score_numbers[i]->draw_pos_x = 600+(i*(BLOCK_SIZE/2));
-        score_numbers[i]->draw_pos_y = 500;
+        score_numbers[i]->draw_pos_y = 480;
         score_numbers[i]->draw_active = false;
         score_numbers[i]->pos_x = &score_numbers[i]->draw_pos_x;
         score_numbers[i]->pos_y = &score_numbers[i]->draw_pos_y;
