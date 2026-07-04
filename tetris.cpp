@@ -452,6 +452,7 @@ void tetris()
 
     SDL_Event input;
 
+    graphics_obj *background;
     graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y];
     graphics_obj *next_grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y];
     graphics_obj *boundary_line;
@@ -489,37 +490,54 @@ void tetris()
 
     srand(time(NULL));
 
-    temp_surface = SDL_CreateRGBSurface(0, BLOCK_SIZE, BLOCK_SIZE, 32, 0, 0, 0, 0);
-
     // White
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 255, 255));
+    temp_surface = IMG_Load("white.png");
     block_colours[0] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Red
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 0, 0));
+    temp_surface = IMG_Load("red.png");
     block_colours[1] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Green
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 255, 0));
+    temp_surface = IMG_Load("green.png");
     block_colours[2] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Blue
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 0, 255));
+    temp_surface = IMG_Load("blue.png");
     block_colours[3] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Purple
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 160, 32, 240));
+    temp_surface = IMG_Load("purple.png");
     block_colours[4] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Yellow
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 255, 255, 0));
+    temp_surface = IMG_Load("yellow.png");
     block_colours[5] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
+    SDL_FreeSurface(temp_surface);
 
     // Cyan
-    SDL_FillRect(temp_surface, NULL, SDL_MapRGB(temp_surface->format, 0, 255, 255));
+    temp_surface = IMG_Load("cyan.png");
     block_colours[6] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
-
     SDL_FreeSurface(temp_surface);
+
+    background = new graphics_obj;
+    background->sprite = IMG_Load("background.png");
+    background->texture = SDL_CreateTextureFromSurface(window->renderer, background->sprite);
+    background->draw_pos_x = 0;
+    background->draw_pos_y = 0;
+    background->draw_active = true;
+    background->pos_x = &background->draw_pos_x;
+    background->pos_y = &background->draw_pos_y;
+    background->size_x = 800;
+    background->size_y = 800;
+    background->active = &background->draw_active;
+
+    window->add_object(background);
 
     boundary_line = new graphics_obj;
     boundary_line->sprite = IMG_Load("boundary_line.png");
@@ -895,6 +913,10 @@ void tetris()
     SDL_Quit();
 
     delete window;
+
+    SDL_FreeSurface(background->sprite);
+    SDL_DestroyTexture(background->texture);
+    delete background;
 
     SDL_FreeSurface(boundary_line->sprite);
     SDL_DestroyTexture(boundary_line->texture);
