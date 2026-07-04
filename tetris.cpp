@@ -470,7 +470,7 @@ void tetris()
     int current;
     int next = -1;
     int remove_lines[4] = {-1, -1, -1, -1};
-    char num_image[] = "x.png";
+    char num_image[] = "textures/x.png";
     char num_str[2];
 
     timespec last_move {0, 0};
@@ -491,42 +491,42 @@ void tetris()
     srand(time(NULL));
 
     // White
-    temp_surface = IMG_Load("white.png");
+    temp_surface = IMG_Load("textures/white.png");
     block_colours[0] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Red
-    temp_surface = IMG_Load("red.png");
+    temp_surface = IMG_Load("textures/red.png");
     block_colours[1] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Green
-    temp_surface = IMG_Load("green.png");
+    temp_surface = IMG_Load("textures/green.png");
     block_colours[2] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Blue
-    temp_surface = IMG_Load("blue.png");
+    temp_surface = IMG_Load("textures/blue.png");
     block_colours[3] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Purple
-    temp_surface = IMG_Load("purple.png");
+    temp_surface = IMG_Load("textures/purple.png");
     block_colours[4] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Yellow
-    temp_surface = IMG_Load("yellow.png");
+    temp_surface = IMG_Load("textures/yellow.png");
     block_colours[5] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     // Cyan
-    temp_surface = IMG_Load("cyan.png");
+    temp_surface = IMG_Load("textures/cyan.png");
     block_colours[6] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
     SDL_FreeSurface(temp_surface);
 
     background = new graphics_obj;
-    background->sprite = IMG_Load("background.png");
+    background->sprite = IMG_Load("textures/background.png");
     background->texture = SDL_CreateTextureFromSurface(window->renderer, background->sprite);
     background->draw_pos_x = 0;
     background->draw_pos_y = 0;
@@ -540,7 +540,7 @@ void tetris()
     window->add_object(background);
 
     boundary_line = new graphics_obj;
-    boundary_line->sprite = IMG_Load("boundary_line.png");
+    boundary_line->sprite = IMG_Load("textures/boundary_line.png");
     boundary_line->texture = SDL_CreateTextureFromSurface(window->renderer, boundary_line->sprite);
     boundary_line->draw_pos_x = 400;
     boundary_line->draw_pos_y = 0;
@@ -554,7 +554,7 @@ void tetris()
     window->add_object(boundary_line);
 
     next_img = new graphics_obj;
-    next_img->sprite = IMG_Load("next.png");
+    next_img->sprite = IMG_Load("textures/next.png");
     next_img->texture = SDL_CreateTextureFromSurface(window->renderer, next_img->sprite);
     next_img->draw_pos_x = 480;
     next_img->draw_pos_y = 120;
@@ -568,7 +568,7 @@ void tetris()
     window->add_object(next_img);
 
     lines_img = new graphics_obj;
-    lines_img->sprite = IMG_Load("lines.png");
+    lines_img->sprite = IMG_Load("textures/lines.png");
     lines_img->texture = SDL_CreateTextureFromSurface(window->renderer, lines_img->sprite);
     lines_img->draw_pos_x = 480;
     lines_img->draw_pos_y = 400;
@@ -582,7 +582,7 @@ void tetris()
     window->add_object(lines_img);
 
     level_img = new graphics_obj;
-    level_img->sprite = IMG_Load("level.png");
+    level_img->sprite = IMG_Load("textures/level.png");
     level_img->texture = SDL_CreateTextureFromSurface(window->renderer, level_img->sprite);
     level_img->draw_pos_x = 480;
     level_img->draw_pos_y = 450;
@@ -596,7 +596,7 @@ void tetris()
     window->add_object(level_img);
 
     score_img = new graphics_obj;
-    score_img->sprite = IMG_Load("score.png");
+    score_img->sprite = IMG_Load("textures/score.png");
     score_img->texture = SDL_CreateTextureFromSurface(window->renderer, score_img->sprite);
     score_img->draw_pos_x = 480;
     score_img->draw_pos_y = 500;
@@ -611,7 +611,7 @@ void tetris()
 
     for (int i = 0; i < 10; i++) {
         sprintf(num_str, "%d", i);
-        num_image[0] = num_str[0];
+        num_image[9] = num_str[0];
 
         temp_surface = IMG_Load(num_image);
         numbers[i] = SDL_CreateTextureFromSurface(window->renderer, temp_surface);
@@ -698,7 +698,7 @@ void tetris()
     }
 
     game_over = new graphics_obj;
-    game_over->sprite = IMG_Load("game_over.png");
+    game_over->sprite = IMG_Load("textures/game_over.png");
     game_over->texture = SDL_CreateTextureFromSurface(window->renderer, game_over->sprite);
     game_over->draw_pos_x = 143;
     game_over->draw_pos_y = 390;
@@ -712,7 +712,7 @@ void tetris()
     window->add_object(game_over);
 
     paused = new graphics_obj;
-    paused->sprite = IMG_Load("paused.png");
+    paused->sprite = IMG_Load("textures/paused.png");
     paused->texture = SDL_CreateTextureFromSurface(window->renderer, paused->sprite);
     paused->draw_pos_x = 143;
     paused->draw_pos_y = 390;
