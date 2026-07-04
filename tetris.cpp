@@ -700,7 +700,7 @@ void tetris()
     game_over = new graphics_obj;
     game_over->sprite = IMG_Load("game_over.png");
     game_over->texture = SDL_CreateTextureFromSurface(window->renderer, game_over->sprite);
-    game_over->draw_pos_x = 343;
+    game_over->draw_pos_x = 143;
     game_over->draw_pos_y = 390;
     game_over->draw_active = false;
     game_over->pos_x = &game_over->draw_pos_x;
@@ -714,7 +714,7 @@ void tetris()
     paused = new graphics_obj;
     paused->sprite = IMG_Load("paused.png");
     paused->texture = SDL_CreateTextureFromSurface(window->renderer, paused->sprite);
-    paused->draw_pos_x = 343;
+    paused->draw_pos_x = 143;
     paused->draw_pos_y = 390;
     paused->draw_active = false;
     paused->pos_x = &paused->draw_pos_x;
