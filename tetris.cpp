@@ -42,6 +42,27 @@
 #define INITIAL_FALL_DELAY 600000000
 #define DROP_FALL_DELAY 50000000
 
+int rand_a;
+int rand_b;
+int rand_c;
+int rand_d;
+int rand_e;
+int rand_f;
+int rand_g;
+int rand_h;
+
+void generate_random_params()
+{
+    rand_a = rand();
+    rand_b = rand();
+    rand_c = rand();
+    rand_d = rand();
+    rand_e = rand();
+    rand_f = rand();
+    rand_g = rand();
+    rand_h = rand();
+}
+
 bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRID_SIZE_Y])
 {
     return tetrominoe[0][0] >= 0 && tetrominoe[0][0] < GRID_SIZE_X
@@ -58,84 +79,88 @@ bool check_tetrominoe_collision(int tetrominoe[4][2], graphics_obj *grid[GRID_SI
         && !*grid[tetrominoe[3][0]][tetrominoe[3][1]]->active;
 }
 
-void setup_tetrominoe(int tetrominoe[4][2], int piece, int offset_x)
+void setup_tetrominoe(int tetrominoe[4][2], int piece, int offset_x, bool generate = false)
 {
+    if (generate) {
+        generate_random_params();
+    }
+
     switch (piece) {
         case PIECE_LINE:
-            tetrominoe[0][0] = offset_x + 0;
-            tetrominoe[0][1] = 1;
-            tetrominoe[1][0] = offset_x + 1;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = offset_x + 2;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = offset_x + 3;
-            tetrominoe[3][1] = 1;
+            tetrominoe[0][0] = offset_x + (rand_a % 4);
+            tetrominoe[0][1] = (rand_b % 4);
+            tetrominoe[1][0] = offset_x + (rand_c % 4);
+            tetrominoe[1][1] = (rand_d % 4);
+            tetrominoe[2][0] = offset_x + (rand_e % 4);
+            tetrominoe[2][1] = (rand_f % 4);
+            tetrominoe[3][0] = offset_x + (rand_g % 4);
+            tetrominoe[3][1] = (rand_h % 4);
             break;
 
         case PIECE_L:
-            tetrominoe[0][0] = offset_x + 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 2;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = offset_x + 1;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = offset_x + 2;
-            tetrominoe[3][1] = 0;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
 
         case PIECE_REVERSE_L:
-            tetrominoe[0][0] = offset_x + 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 0;
-            tetrominoe[1][1] = 1;
-            tetrominoe[2][0] = offset_x + 1;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = offset_x + 2;
-            tetrominoe[3][1] = 0;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
 
         case PIECE_SQUARE:
-            tetrominoe[0][0] = offset_x + 1;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 2;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = offset_x + 1;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = offset_x + 2;
-            tetrominoe[3][1] = 1;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
 
         case PIECE_5:
-            tetrominoe[0][0] = offset_x + 1;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 2;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = offset_x + 0;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = offset_x + 1;
-            tetrominoe[3][1] = 1;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
 
         case PIECE_S:
-            tetrominoe[0][0] = offset_x + 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 1;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = offset_x + 1;
-            tetrominoe[2][1] = 1;
-            tetrominoe[3][0] = offset_x + 2;
-            tetrominoe[3][1] = 1;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
 
         case PIECE_T:
-            tetrominoe[0][0] = offset_x + 0;
-            tetrominoe[0][1] = 0;
-            tetrominoe[1][0] = offset_x + 1;
-            tetrominoe[1][1] = 0;
-            tetrominoe[2][0] = offset_x + 2;
-            tetrominoe[2][1] = 0;
-            tetrominoe[3][0] = offset_x + 1;
-            tetrominoe[3][1] = 1;
+            tetrominoe[0][0] = offset_x + (rand_a % 3);
+            tetrominoe[0][1] = (rand_b % 3);
+            tetrominoe[1][0] = offset_x + (rand_c % 3);
+            tetrominoe[1][1] = (rand_d % 3);
+            tetrominoe[2][0] = offset_x + (rand_e % 3);
+            tetrominoe[2][1] = (rand_f % 3);
+            tetrominoe[3][0] = offset_x + (rand_g % 3);
+            tetrominoe[3][1] = (rand_h % 3);
             break;
     }
 }
@@ -163,7 +188,7 @@ bool create_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[GRID_SIZE_X][GRI
 
 void create_next_tetrominoe(int tetrominoe[4][2], graphics_obj *grid[NEXT_GRID_SIZE_X][NEXT_GRID_SIZE_Y], SDL_Texture *block_colours[PIECE_TYPES], int piece)
 {
-    setup_tetrominoe(tetrominoe, piece, 0);
+    setup_tetrominoe(tetrominoe, piece, 0, true);
 
     for (int x = 0; x < NEXT_GRID_SIZE_X; x++) {
         for (int y = 0; y < NEXT_GRID_SIZE_Y; y++) {
@@ -726,6 +751,8 @@ void tetris()
     window->add_object(paused);
 
     current = rand() % 7;
+
+    generate_random_params();
 
     create_tetrominoe(tetrominoe, grid, block_colours, current);
 
